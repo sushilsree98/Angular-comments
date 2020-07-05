@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators'
+import { Post } from './post.model';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +17,7 @@ export class AppComponent implements OnInit {
     this.onFetchPosts();
   }
 
-  onCreatePost(postData: { title: string; content: string }) {
+  onCreatePost(postData:Post) {
     // Send Http request
     // this.http
     //   .post(
@@ -26,7 +28,7 @@ export class AppComponent implements OnInit {
     //     console.log(responseData);
     //   });
 
-    this.http.post("https://fir-5b995.firebaseio.com/posts.json",postData)
+    this.http.post<{name : string}>("https://fir-5b995.firebaseio.com/posts.json",postData)
       .subscribe(data =>{
         console.log(data);
       })
@@ -42,7 +44,18 @@ export class AppComponent implements OnInit {
   }
 
   private fetchPost(){
-    this.http.get("https://fir-5b995.firebaseio.com/posts.json")
+    this.http.get<{[key : string] : Post}>("https://fir-5b995.firebaseio.com/posts.json")
+      .pipe(map(res=>{
+        const postKey: Post[] = [];
+
+        for(let key in res){
+          if(res.hasOwnProperty(key)){
+            postKey.push({ ...res[key], id:key })
+          }
+        }
+
+        return postKey;
+      }))
      .subscribe(data=>{
        console.log(data);
      })
