@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators'
 import { Post } from './post.model';
+import { PostsService } from './posts.service';
 
 @Component({
   selector: 'app-root',
@@ -9,55 +10,37 @@ import { Post } from './post.model';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  loadedPosts = [];
+  loadedPosts:Post[] = [];
+  isFetching = false;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private postService: PostsService) {}
 
   ngOnInit() {
-    this.onFetchPosts();
+    this.isFetching = true
+    this.postService.fetchPost()
+     .subscribe(data => {
+      this.isFetching = false;
+      this.loadedPosts = data;
+      console.log(this.loadedPosts)
+     })
   }
 
   onCreatePost(postData:Post) {
-    // Send Http request
-    // this.http
-    //   .post(
-    //     'https://ng-complete-guide-c56d3.firebaseio.com/posts.json',
-    //     postData
-    //   )
-    //   .subscribe(responseData => {
-    //     console.log(responseData);
-    //   });
-
-    this.http.post<{name : string}>("https://fir-5b995.firebaseio.com/posts.json",postData)
-      .subscribe(data =>{
-        console.log(data);
-      })
+    this.postService.createPost(postData.title,postData.content);
   }
 
   onFetchPosts() {
     // Send Http request
-    this.fetchPost();
+    this.isFetching = true
+    this.postService.fetchPost()
+      .subscribe(data => {
+        this.isFetching = false;
+        this.loadedPosts = data;
+      })
   }
 
   onClearPosts() {
     // Send Http request
   }
 
-  private fetchPost(){
-    this.http.get<{[key : string] : Post}>("https://fir-5b995.firebaseio.com/posts.json")
-      .pipe(map(res=>{
-        const postKey: Post[] = [];
-
-        for(let key in res){
-          if(res.hasOwnProperty(key)){
-            postKey.push({ ...res[key], id:key })
-          }
-        }
-
-        return postKey;
-      }))
-     .subscribe(data=>{
-       console.log(data);
-     })
-  }
 }
