@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Post } from './post.model';
-import { HttpClient } from '@angular/common/http'
-import { map } from 'rxjs/operators' 
-import { Subject } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http'
+import { map, catchError } from 'rxjs/operators' 
+import { Subject, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +25,16 @@ export class PostsService {
   }
 
   fetchPost(){
-   return this.http.get<{ [key: string]: Post }>("https://fir-5b995.firebaseio.com/posts.json")
+    let queryParams = new HttpParams();
+    queryParams = queryParams.append('print','pretty');
+    queryParams = queryParams.append('Hello','world')
+
+   return this.http.get<{ [key: string]: Post }>("https://fir-5b995.firebaseio.com/posts.json",{
+     headers : new HttpHeaders({
+      'custom-header': 'Hello world'
+     }),
+     params: queryParams
+   })
       .pipe(map(res => {
         const postKey: Post[] = [];
 
@@ -36,7 +45,11 @@ export class PostsService {
         }
 
         return postKey;
-      }))
+      }),
+      catchError(error=>{
+        return throwError(error);
+      })
+      )
   }
 
   deletePost(){
