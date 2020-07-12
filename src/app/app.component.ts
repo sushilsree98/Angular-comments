@@ -57,7 +57,6 @@ export class AppComponent implements OnInit, OnDestroy {
     // Send Http request
     this.postService.deletePost()
       .subscribe(data=>{
-        console.log('post deleted')
         this.loadedPosts = [];
       })
   }
