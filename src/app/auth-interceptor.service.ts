@@ -1,9 +1,12 @@
-import { HttpInterceptor, HttpRequest, HttpHandler } from '@angular/common/http';
+import { HttpInterceptor, HttpRequest, HttpHandler} from '@angular/common/http';
 
 export class AuthInterceptor implements HttpInterceptor{
 
     intercept(req:HttpRequest<any>,next:HttpHandler){
         console.log("A Request is sent");
-        return next.handle(req);
+        const newReq = req.clone({
+                headers:req.headers.append('Auth','ABCD')
+            })
+        return next.handle(newReq)
     }
 }
